@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe de Desarrollo de Aplicación: Planificador de Vacaciones</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+        }
+        header {
+            background: #333;
+            color: #fff;
+            padding-top: 30px;
+            min-height: 70px;
+            border-bottom: #bbb 1px solid;
+            margin-bottom: 20px;
+        }
+        header h1 {
+            text-align: center;
+            text-transform: uppercase;
+            margin: 0;
+            font-size: 24px;
+        }
+        section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        h2 {
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        code {
+            background: #eee;
+            border: 1px solid #ddd;
+            padding: 5px;
+            border-radius: 5px;
+            display: block;
+            white-space: pre-wrap;
+        }
+        pre {
+            background: #eee;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            overflow: auto;
+        }
+        ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        .footer {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #333;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Informe de Desarrollo de Aplicación: Planificador de Vacaciones</h1>
+        </div>
+    </header>
+
+    <div class="container">
+        <section>
+            <h2>Contexto de la Solicitud</h2>
+            <p>El ejercicio de desarrollo consiste en crear una aplicación móvil para Android que permita a los usuarios planificar sus vacaciones de manera efectiva. La aplicación debe ofrecer funcionalidades como la planificación de lugares de interés, la visualización de estos lugares en un mapa, la capacidad de agregar imágenes de referencia, tomar fotografías y almacenar datos en una base de datos SQLite. También debe integrar un servicio web para convertir costos locales a dólares estadounidenses y soportar múltiples idiomas.</p>
+        </section>
+
+        <section>
+            <h2>Descripción del Código Proporcionado</h2>
+            <p>El código proporcionado está relacionado con dos aspectos clave de la aplicación: la visualización y edición de imágenes en pantalla completa (<code>VisorImagen</code>) y el registro de nuevos lugares de interés (<code>RegistrarPlanificador</code>). A continuación, se detalla cada componente con sus funcionalidades y consideraciones:</p>
+
+            <h3>1. Actividad de Visualización de Imagen: <code>VisorImagen</code></h3>
+            <pre><code>package com.example.examen
+
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
+import android.view.WindowManager
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import com.example.examen.ui.theme.Evaluacion1Theme
+
+class VisorImagen : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN
+        )
+        val imageUri: Uri = intent.getParcelableExtra("imageUri")!!
+
+        setContent {
+            Evaluacion1Theme {
+                ImagenPantallaCompletaUI(uri = imageUri)
+            }
+        }
+    }
+}
+
+@Composable
+fun ImagenPantallaCompletaUI(uri: Uri) {
+
+    val contexto = LocalContext.current
+    val imageBitmap = uri2Image(uri, contexto).asImageBitmap()
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Image(
+            bitmap = imageBitmap,
+            contentDescription = "Full-screen image",
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    rotationZ = 90f
+                },
+            contentScale = ContentScale.Inside
+        )
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Bottom,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        Button(onClick = {
+            contexto.startActivity(Intent(contexto, RegistrarPlanificador::class.java))
+        }){
+            Text(text = "Atrás")
+        }
+    }
+}
+</code></pre>
+            <p><strong>Descripción del Código:</strong></p>
+            <ul>
+                <li><strong>Clase <code>VisorImagen</code>:</strong> Esta clase extiende <code>ComponentActivity</code> y se encarga de mostrar una imagen en pantalla completa. La actividad configura el modo de pantalla completa y recibe una URI de imagen a través de un <code>Intent</code>.</li>
+                <li><strong>Método <code>onCreate</code>:</strong> Configura la actividad y establece el contenido usando <code>setContent</code>. Obtiene la URI de la imagen y pasa esta URI a la función composable <code>ImagenPantallaCompletaUI</code>.</li>
+                <li><strong>Función <code>ImagenPantallaCompletaUI</code>:</strong> Convierte la URI en un <code>ImageBitmap</code> y la muestra en pantalla completa, rotando la imagen 90 grados en el eje Z. Incluye un botón para volver a la actividad anterior (<code>RegistrarPlanificador</code>), facilitando la navegación.</li>
+            </ul>
+            <p><strong>Consideraciones:</strong></p>
+            <ul>
+                <li><strong>Pantalla Completa:</strong> La imagen se muestra en pantalla completa y rotada, proporcionando una vista detallada.</li>
+                <li><strong>Navegación:</strong> El botón "Atrás" permite regresar a la actividad de registro (<code>RegistrarPlanificador</code>), facilitando la navegación.</li>
+            </ul>
+
+            <h3>2. Actividad de Registro de Lugar: <code>RegistrarPlanificador</code></h3>
+            <pre><code>package com.example.examen
+
+import android.app.AlertDialog
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
+import com.example.examen.db.Planificador
+import com.example.examen.db.PlanificadorDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.UUID
+
+class RegistrarPlanificador : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            val latitud = intent.getStringExtra("latitud")!!
+            val longitud = intent.getStringExtra("longitud")!!
+
+            RegPlanUI { orden,
+                nombreLocacion,
+                rutaImagen,
+                latitud,
+                longitud,
+                costoAlojamiento,
+                costoTraslado,
+                comentario -> RegPlan(orden,
+                nombreLocacion,
+                rutaImagen,
+                latitud,
+                longitud,
+                costoAlojamiento,
+                costoTraslado,
+                comentario)
+            }
+        }
+    }
+
+    fun RegPlan(orden: Int,
+                nombreLocacion: String,
+                rutaImagen: String,
+                latitud: String,
+                longitud: String,
+                costoAlojamiento: Int,
+                costoTraslado: Int,
+                comentario: String
+    ) {
+        val db = PlanificadorDatabase.getDatabase(applicationContext)
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                db.planificadorDao().insert(
+                    Planificador(
+                        id = UUID.randomUUID().toString(),
+                        orden = orden,
+                        nombreLocacion = nombreLocacion,
+                        rutaImagen = rutaImagen,
+                        latitud = latitud,
+                        longitud = longitud,
+                        costoAlojamiento = costoAlojamiento,
+                        costoTraslado = costoTraslado,
+                        comentario = comentario
+                    )
+                )
+            }
+            AlertDialog.Builder(this@RegistrarPlanificador)
+                .setTitle("Registro Exitoso")
+                .setMessage("El lugar ha sido registrado exitosamente.")
+                .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+                .show()
+        }
+    }
+}
+
+@Composable
+fun RegPlanUI(
+    RegPlan: (Int, String, String, String, String, Int, Int, String) -> Unit
+) {
+    val contexto = LocalContext.current
+
+    var orden by remember { mutableStateOf("") }
+    var nombreLocacion by remember { mutableStateOf("") }
+    var uriImagen by remember { mutableStateOf("") }
+    var latitud by remember { mutableStateOf("") }
+    var longitud by remember { mutableStateOf("") }
+    var costoAlojamiento by remember { mutableStateOf("") }
+    var costoTraslado by remember { mutableStateOf("") }
+    var comentario by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        OutlinedTextField(
+            value = orden,
+            onValueChange = setOrden,
+            label = { Text(text = stringResource(R.string.msg_Orden)) },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done
+            )
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        OutlinedTextField(
+            value = nombreLocacion,
+            onValueChange = setNombreLocacion,
+            label = { Text(text = stringResource(R.string.msg_NombreLocacion)) }
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        OutlinedTextField(
+            value = uriImagen,
+            onValueChange = setUriImagen,
+            label = { Text(text = stringResource(R.string.msg_RutaImagen)) }
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        OutlinedTextField(
+            value = latitud,
+            onValueChange = setLatitud,
+            label = { Text(text = stringResource(R.string.msg_Latitud)) }
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        OutlinedTextField(
+            value = longitud,
+            onValueChange = setLongitud,
+            label = { Text(text = stringResource(R.string.msg_Longitud)) }
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        OutlinedTextField(
+            value = costoAlojamiento,
+            onValueChange = setCostoAlojamiento,
+            label = { Text(text = stringResource(R.string.msg_CostoAlojamiento)) },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done
+            )
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        OutlinedTextField(
+            value = costoTraslado,
+            onValueChange = setCostoTraslado,
+            label = { Text(text = stringResource(R.string.msg_CostoTraslado)) },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done
+            )
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        OutlinedTextField(
+            value = comentario,
+            onValueChange = { comentario = it },
+            label = { Text(text = stringResource(R.string.msg_Comentario)) }
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        Button(
+            onClick = {
+                RegPlan(
+                    orden = orden.toIntOrNull() ?: 0,
+                    nombreLocacion = nombreLocacion,
+                    rutaImagen = uriImagen,
+                    latitud = latitud,
+                    longitud = longitud,
+                    costoAlojamiento = costoAlojamiento.toIntOrNull() ?: 0,
+                    costoTraslado = costoTraslado.toIntOrNull() ?: 0,
+                    comentario = comentario
+                )
+            }
+        ) {
+            Text(text = stringResource(R.string.msg_btnRegistrar))
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+    }
+}
+</code></pre>
+            <p><strong>Descripción del Código:</strong></p>
+            <ul>
+                <li><strong>Clase <code>RegistrarPlanificador</code>:</strong> Esta clase extiende <code>ComponentActivity</code> y maneja el registro de nuevos lugares. Configura el contenido de la actividad usando la función composable <code>RegPlanUI</code>.</li>
+                <li><strong>Método <code>RegPlan</code>:</strong> Inserta los detalles del nuevo lugar en la base de datos SQLite mediante una corutina. Muestra un diálogo de confirmación una vez completado.</li>
+                <li><strong>Función <code>RegPlanUI</code>:</strong> Proporciona un formulario para ingresar los detalles del lugar. Incluye campos para nombre, orden, URI de imagen, latitud, longitud, costo de alojamiento y traslado, y comentarios. Permite registrar los datos mediante un botón.</li>
+            </ul>
+            <p><strong>Consideraciones:</strong></p>
+            <ul>
+                <li><strong>Persistencia de Datos:</strong> Los datos ingresados se almacenan en una base de datos SQLite, asegurando la persistencia.</li>
+                <li><strong>Interfaz de Usuario:</strong> Utiliza campos de texto y botones con diseño estructurado y validaciones básicas para una experiencia de usuario accesible.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Conclusiones</h2>
+            <p>El código proporcionado implementa dos componentes clave de la aplicación de planificación de vacaciones: la visualización de imágenes en pantalla completa y 
+                el registro de nuevos lugares. La integración de estos componentes con el almacenamiento de datos y la funcionalidad de la cámara y mapas cumple con los 
+                requisitos del caso de estudio. Se recomienda extender la aplicación para incluir la visualización en mapas usando osmdroid, la capacidad de tomar y almacenar fotografías, 
+                y la integración con un servicio web para la conversión de moneda. </p>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2024 Informe de Desarrollo de Aplicación. Todos los derechos reservados Sebastian Ahern.</p>
+    </footer>
+</body>
+</html>
